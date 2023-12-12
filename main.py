@@ -90,25 +90,10 @@ def main():
                 wrap.student_vec.append(copy.deepcopy(st_aux.model).cpu())
                 del st_aux
 
-    if args.active != "no":
-        PATH = (
-            "active/"
-            + args.task_name
-            + "/"
-            + str(args.checkpoint)
-            + "_"
-            + args.active
-            + ".npy"
-        )
-        target = np.load(PATH)
-        target = target[: wrap.budget_arr[-1]]
-        wrap.active = target
-
     stop_retraining = args.strategy == "EM_raw"
     send_update = False
 
     for step, sample in enumerate(online_dataloader):
-        # IF IT'S AN INITIAL EXAMPLE, SAVE IT.
 
         if args.checkpoint != "-1" and step < args.n_init:
             wrap.save_cache(sample)
@@ -117,7 +102,6 @@ def main():
                 wrap.obtain_embed(sample)
                 wrap.save_embed()
 
-        # IF WE HAVE A CHECKPOINT, WE SKIP N_INIT STEPS
         if args.checkpoint == "-1" or step >= args.n_init:
             gc.collect()
             decision, pred = wrap.query(sample)
@@ -159,13 +143,7 @@ def main():
                 st.train(train_dataloader, eval_dataloader)
 
                 del train_dataloader, eval_dataloader
-                # now if we have multiple models this is broken!
-                # if one model runs out of budget revise what happens
-                if step + 1 and (step + 1) % args.retrain_freq == 0:
-                    # wrap.student_vec = [copy.deepcopy(st.model).cpu()]
-                    # wrap.budget_models.append(copy.deepcopy(st.model).cpu())
-                    # wrap.
-                    wrap.update = False
+                if step + 1 and (step + 1) % args.retrain_freq == 0: wrap.update = False
 
                 wrap.reorder_students()
                 if wrap.budget_arr[-1] == 0:
