@@ -15,19 +15,9 @@ softmax = Softmax()
 
 METRICS = {
     "rt-polarity": ["ACC"],
-    "hatexplain_nt": ["Classification-F1"],
-    "hatexplain": ["hatexplain"],
-    "isear": ["Classification-F1"],
-    "trec": ["Classification-F1"],
+    "isear": ["ACC"],
     "openbook": ["ACC"],
-    "openbook_nf": ["ACC"],
-    "quoref": ["QA-F1"],
-    "implicatures": ["ACC"],
     "fever": ["ACC"],
-    "fever_explore": ["Classification-F1"],
-    "mmlu-human": ["Classification-F1"],
-    "mmlu-ss": ["Classification-F1"],
-    "qa_wikidata": ["QA-F1"],
 }
 
 
@@ -83,19 +73,13 @@ class Metric:
 def evaluate_soft(predictions, data, temperature=1):
     cross_entropy_score = []
     accuracy = []
-    # new_predictions = []
-    # new_data = []
+
     for idx, pred in enumerate(predictions):
         predictions[idx] = softmax(torch.tensor(pred).cuda().float())
         data[idx] = softmax(torch.tensor(data[idx]).cuda().float() / temperature)
         cross_entropy_score.append(cross_entropy(predictions[idx], data[idx]))
         predictions[idx].argmax() == data[idx].argmax()
-        # new_predictions.append(predictions[idx].argmax().cpu())
-        # new_data.append(data[idx].argmax().cpu())
         accuracy.append(1 * (predictions[idx].argmax() == data[idx].argmax()).tolist())
-    # if len(new_data) > 1: pdb.set_trace()
-    # sum(accuracy) / len(data)
-    # f1_score(new_data, new_predictions, average="macro")
     return [sum(accuracy) / len(data), sum(cross_entropy_score) / len(data)]
 
 
