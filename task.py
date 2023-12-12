@@ -36,9 +36,7 @@ class Task:
         for split, split_path in self.data_path.items():
             fin = pd.read_csv(
                 os.path.join(self.path, split_path),
-                # converters={"output": literal_eval},  #this is needed for quoref!!!
             )
-            # remove this once we have the full dataset
             if self.task_name == "ag_news":
                 fin = pd.read_csv(os.path.join(self.path, split_path), nrows=10000)
                 if split == "test":
@@ -50,19 +48,6 @@ class Task:
             if "llm_hard" in fin.columns:
                 llm_hard = list(fin["llm_hard"].values.astype(str))
 
-            ## preferred to remove this
-            if self.task_name == "quoref":
-                from ast import literal_eval
-
-                new_in = []
-                new_out = []
-                for inp, out in zip(inputs, outputs):
-                    # contatenate all with , and 'and'?
-                    for possible_target in out:
-                        new_in.append(inp)
-                        new_out.append(possible_target)
-                inputs = new_in
-                outputs = new_out
             data[split] = arrow_dataset.Dataset.from_dict(
                 {
                     "inputs": inputs,
@@ -99,11 +84,7 @@ class Task:
                     out["llm_soft"] = make_soft(batch["llm_hard"], target="llm")
                 else:
                     out["llm_soft"] = select_classes(batch["llm_soft"])
-
-            # Don't encode for validation/test
-            # now we always do this!!!!!
-            # FIX!!!!!!!!!!!!!!
-            # FIX!!!!!!!!!!!!!!
+                    
             if is_eval:
                 out["gold_hard"] = batch["gold_hard"]
                 out["llm_hard"] = batch["llm_hard"]
@@ -137,7 +118,6 @@ class Task:
             new_batch = []
             for soft_labels in batch_soft_labels:
                 soft_labels = ast.literal_eval(soft_labels)
-                # in classification we only have one token
                 soft_labels = soft_labels[0]
                 new_soft_labels = []
                 for key in self.soft_classes:
@@ -259,9 +239,6 @@ def get_task(accelerator, args, model=None):
 
 
 def make_datacollator(args, tokenizer, processed_data, model=None):
-    # for key, value in processed_data.items():
-    #    for idx, element in enumerate(value):
-    #        processed_data[key][idx] = torch.tensor(element).cuda()
     processed_data = arrow_dataset.Dataset.from_dict(processed_data)
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model, padding="longest")
     aux = processed_data.train_test_split(test_size=0.1)
