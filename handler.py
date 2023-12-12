@@ -110,16 +110,10 @@ class handler_LLM:
             return False
         self.budget_arr = [b - self.cost for b in self.budget_arr]
         self.retrain = False
-        # if one of the budgets is 0, then we will have to train the final model for that budget
-        # this may be problematic as we should wait until the full RETRAIN_FREQ.
-        # TODO: create a buffer, either for data or for models
         for b in self.budget_arr:
             if b == 0:
                 self.retrain = True
         if self.budget_arr[-1] >= 0:
-            # if budgets are very high and we are using multiple, we will run into issues
-            # because of the following line
-            # again, a buffer would be useful
             if (
                 (self.n_online <= self.n_init and self.checkpoint == "-1")
                 or (self.missing * self.cost <= self.budget_arr[-1])
@@ -145,23 +139,14 @@ class handler_LLM:
             if self.strat == "BT":
                 if self.BT[-1] < self.hparam:
                     return True
-                # aux = copy.deepcopy(self.BT)
-                # aux.sort()
-                # if self.BT[-1] < aux[int(len(aux)*self.rate)]:
-                #    return True
             if self.strat == "MV":
                 if len(self.student_vec) < 5 or self.make_assembly(input):
                     return True
             if self.strat == "CS":
-                # coreset method: we store the embeddings of the data
-                # if the distance is smaller than a threshold, we don't call the LLM
                 self.obtain_embed(input)
                 candidate, similarity = self.retrieve_candidate()
                 if similarity < self.hparam:
                     return True
-                # self.output = candidate
-
-        # we haven't done the call
         self.retrain = False
         self.budget_arr = [b + self.cost for b in self.budget_arr]
         return False
@@ -221,7 +206,7 @@ class handler_LLM:
             aux = aux_student(budget_model, self.student.args, self.task)
             previous_outputs.append(aux.query(input))
 
-        # BT distance average
+        # MS distance average
         aux = self.output[0].sort().values.tolist()
         self.BT.append(abs(aux[-1] - aux[-2]))
         self.EN.append(abs(entropy(softmax(self.output[0][:100]))))
@@ -277,9 +262,4 @@ class handler_LLM:
                 self.student.model = copy.deepcopy(self.student_vec[-1]).cuda()
             self.retrain = False
             return
-        # Third case: we don't do MV, we do a rutinary update
-        # NOW HANDLED OUTSIDE
-        # We save the copy of the student model
-        # self.student_vec = [copy.deepcopy(self.student.model).cpu()]
-        # self.update = False
         return
