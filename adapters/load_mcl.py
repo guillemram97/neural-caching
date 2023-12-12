@@ -28,15 +28,6 @@ def replace_layers(model, adapter_class, ac_kwargs):
                 setattr(model, name, new_linear)
 
 
-# def inform_layers(model, adapter_class, value):
-#    for module in model.children():
-#        if len(list(module.children())) > 0:
-#            inform_layers(module, adapter_class, value)
-
-#        if isinstance(module, adapter_class):
-#            module.task_id = value
-
-
 def update_weights(model, adapter_class):
     for module in model.children():
         if len(list(module.children())) > 0:
