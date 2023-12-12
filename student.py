@@ -57,7 +57,6 @@ class student:
         else:
             self.dic_classes = None
 
-        # need to revise these two!!!!
         self.metric = Metric(self.args, soft=self.args.is_classification)
         self.metric_test = Metric(self.args, soft=self.args.is_classification)
 
@@ -163,10 +162,6 @@ class student:
                 "test_wrong_llm_acc": test_metric_wrong_llm[0],
                 "data amount": self.data_amount,
             }
-            # if len(test_metric_gold) == 2:
-            #    stats["test_gold_CE"] = test_metric_gold[1]
-            # if len(test_metric_llm) == 2:
-            #    stats["test_llm_CE"] = test_metric_gold[1]
 
             for suffix in self.suffixes:
                 neptune_log(
@@ -206,12 +201,12 @@ class student:
                 * self.args.num_train_epochs
                 * len(
                     train_dataloader.dataset
-                )  # aixo esta be? no hauria de ser len(train_dataloader.dataset)?
+                ) 
             ),
             num_training_steps=self.args.num_train_epochs
             * len(
                 train_dataloader.dataset
-            ),  # aixo esta be? no hauria de ser len(train_dataloader.dataset)?
+            ),
         )
 
         # Move to the device
@@ -244,9 +239,6 @@ class student:
                     target=self.target,
                 )
                 self.model.cpu()
-
-                # early stopper requires an increasingly increasing metric
-                # we can use epochs instead of eval_metrics[0]
                 self.early_stopper.update(eval_metrics[0], self.model)
                 self.model.cuda()
 
@@ -263,13 +255,6 @@ class student:
                     "main_lr": optimizer.param_groups[0]["lr"],
                 }
 
-                # neptune_log(
-                #    run=self.run,
-                #    pref=f"{self.iteration}-train/",
-                #    stats=stats,
-                #    epoch=epoch,
-                # )
-
             if self.early_stopper.should_finish():
                 break
 
@@ -278,7 +263,6 @@ class student:
         self.model = copy.deepcopy(self.early_stopper.get_best())
         self.model = self.early_stopper.get_best().cuda()
         del self.early_stopper.best_model
-        # self.model.cuda()
 
         self.evaluate()
         if self.save_checkpoint != "no":
@@ -294,7 +278,6 @@ class student:
             torch.save(self.model.state_dict(), PATH_DEST)
 
 
-# estem fent servir CUDA per fer prediccions!
 class aux_student:
     def __init__(self, model, args, task):
         self.model = model
@@ -310,13 +293,12 @@ class aux_student:
     def query(self, input):
         torch.cuda.empty_cache()
         self.model.eval()
-        # self.model.cuda()
         with torch.no_grad():
             if self.soft_labels:
                 predictions = self.model.generate(
                     **{
-                        "input_ids": input["input_ids"].cpu(),  # .cuda(),
-                        "attention_mask": input["attention_mask"].cpu(),  # .cuda(),
+                        "input_ids": input["input_ids"].cpu(), 
+                        "attention_mask": input["attention_mask"].cpu(), 
                     },
                     max_new_tokens=1,
                     output_scores=True,
@@ -330,8 +312,8 @@ class aux_student:
             else:
                 predictions = self.model.generate(
                     **{
-                        "input_ids": input["input_ids"],  # .cuda(),
-                        "attention_mask": input["attention_mask"],  # .cuda(),
+                        "input_ids": input["input_ids"], 
+                        "attention_mask": input["attention_mask"], 
                     },
                     num_beams=self.args.num_beams,
                     max_length=self.args.max_out_length,
