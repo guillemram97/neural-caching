@@ -1,7 +1,7 @@
 #!/bin/sh
 source scripts/cluster.sh
 # Neptune tags 
-TAGS="${TAGS:=debug}"
+TAGS="${TAGS:=regular}"
 SAVE_CHECKPOINT="${SAVE_CHECKPOINT:=no}"
 
 TASK_NAME="${TASK_NAME:=isear}"
@@ -19,25 +19,21 @@ ORACLE="${ORACLE:=0}"
 ORACLE_BT="${ORACLE_BT:=0}"
 TEMPERATURE="${TEMPERATURE:=1.0}"
 MAX_LEN="${MAX_LEN:=512}"
-MAX_OUT_LEN="${MAX_OUT_LEN:=2}" # WE LIMIT FOR CLASSIFICATION
+MAX_OUT_LEN="${MAX_OUT_LEN:=2}" 
 NUM_BEAMS="${NUM_BEAMS:=1}"
 ONLY_IMPROVE="${ONLY_IMPROVE:=0}"
 ACTIVE="${ACTIVE:=no}"
 LR="${LR:=0.0005}"
 BATCH="${BATCH:=16}"
 BATCH_EVAL="${BATCH_EVAL:=16}"
-EPOCHS="${EPOCHS:=30}" # Keep it fixed
+EPOCHS="${EPOCHS:=30}" 
 WEIGHT_DECAY="${WEIGHT_DECAY:=1e-2}"
 IGNORE_LLM="${IGNORE_LLM:=0}"
 
-# Don't limit the number of examples and check how long it takes to execute a
-# full run, maybe it takes less than a day and we're fine, if it's not then
-# change the code and save checkpoint
 TRAIN_SAMPLES="${TRAIN_SAMPLES:=10000}"
 EVAL_SAMPLES="${EVAL_SAMPLES=100}"
 TEST_SAMPLES="${TEST_SAMPLES=10000}"
 
-# Early stopping
 EVAL_EVERY_EPOCHS="${EVAL_EVERY_EPOCHS:=2}"
 EARLY_STOP="${EARLY_STOP:=5}"
 
