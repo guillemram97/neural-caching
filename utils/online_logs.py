@@ -67,27 +67,6 @@ def get_online_metrics_mult(args, metric, sample, pred, decision, budgets, perfo
     return stats
 
 
-# def get_online_metrics_single(args, metric, sample, pred, decision, BT_pred, EN_pred):
-#    stats = {"decision": decision, "EN_pred": EN_pred}
-#    if args.soft_labels:
-#        suffix = "soft"
-#        stats["BT_pred"] = BT_pred
-#    else:
-#        suffix = "hard"
-#    target_ref = [list(sample["llm_" + suffix]), list(sample["gold_" + suffix])]
-#    for name, ref in zip(["llm", "gold"], target_ref):
-#        metric.reset()
-#        metric.add_batch(
-#            predictions=list(pred),
-#            references=list(ref),
-#        )
-#        online_metrics = metric.compute()
-#        for idx, online_metric in enumerate(online_metrics):
-#            if idx == 0:
-#                stats[f"{name}_{idx}"] = online_metric
-#    return stats
-
-
 def log_avg_online(run, avg_stats, step, b):
     stats = {}
     for key, value in avg_stats.items():
