@@ -7,8 +7,5 @@ scipy
 scikit-learn
 protobuf
 neptune-client
-pdbpp
 rouge
-pdbpp
-openai
 backoff
