@@ -36,9 +36,7 @@ def load_optimizer(model, args):
     ]
 
     optimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr=args.learning_rate)
-
     return optimizer
-
 
 def finish_training(accelerator, model, eval_metric, args):
     if args.output_dir is not None:
@@ -50,12 +48,7 @@ def finish_training(accelerator, model, eval_metric, args):
             save_function=accelerator.save,
         )
 
-
-# de moment nomes generar prob de un token
 def soft_loss(logits, soft_labels, temperature=1):
-    # logits es BS x LENGTH x VOCAB
-    # soft labels seran probs de 3-4 tokens en classification tasks
-    # en altres tasks seran altres tokens ?
     cross_batch = 0
     for idx, label in enumerate(soft_labels):
         logits[idx] = softmax(logits[idx])
@@ -64,9 +57,7 @@ def soft_loss(logits, soft_labels, temperature=1):
     return cross_batch / logits.shape[0]
 
 
-# de moment nomes generar prob de un token
 def soft_loss_weighted(logits, soft_labels, temperature=1):
-    # afegir weights
     cross_batch = 0
     for idx, label in enumerate(soft_labels):
         logits[idx] = softmax(logits[idx])
@@ -162,7 +153,6 @@ def evaluate_model(
                 )
                 predictions = list(np.array(predictions[1][0].cpu())[:, dic_classes])
 
-                # fix a formatting bug
                 if type(batch[target + "_soft"]) == torch.Tensor:
                     batch[target + "_soft"] = [aux for aux in batch[target + "_soft"]]
                 predictions, references = accelerator.gather(
@@ -198,7 +188,6 @@ def evaluate_model(
 
     if isinstance(eval_metric, dict):
         _, eval_metric = list(eval_metric.items())[0]
-        # eval_metric = sum(eval_metric.values()) / len(eval_metric)
 
     return eval_metric
 
